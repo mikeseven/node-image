@@ -1,0 +1,65 @@
+{
+   "name": "node-image",
+   "version": "0.5.0",
+   "description": "A Node.JS wrapper around FreeImage",
+   "main": "lib/image.js",
+   "author": "Mikael Bourges-Sevenier <mikeseven@gmail.com>",
+   "keywords": [
+       "jpeg",
+       "jpg",
+       "png",
+       "gif",
+       "bmp",
+       "jng",
+       "pnm",
+       "ppm",
+       "tga",
+       "tiff",
+       "psd",
+       "xbm",
+       "xpm",
+       "j2k",
+       "jpeg2000",
+       "jp2",
+       "sgi",
+       "exr",
+       "hdr",
+       "pict",
+       "raw",
+       "ico",
+       "wbmp",
+       "image",
+       "picture"
+   ],
+   "maintainers": [
+       {
+           "name": "Mikael Bourges-Sevenier",
+           "email": "mikeseven@gmail.com",
+           "twitter": "msevenier"
+       }
+   ],
+   "licenses":[
+     {
+       "type":"BSD",
+       "url": "http://github.com/mikeseven/node-image/raw/master/LICENSES" 
+     }
+   ],
+   "repositories": [
+       {
+           "type": "git",
+           "url": "https://mikeseven@github.com/mikeseven/node-image.git" 
+       } 
+   ],
+   "directories": {
+       "src": "src",
+       "lib": "lib",
+       "test": "test"
+   },
+   "engines": {
+       "node": ">=0.5.9"
+   },
+   "scripts": {
+       "install": "rm -rf build; node-waf configure clean build"
+   }
+}
+
