@@ -59,7 +59,7 @@
        "node": ">=0.5.9"
    },
    "scripts": {
-       "install": "rm -rf build; node-waf configure clean build"
+       "install": "node-gyp rebuild"
    }
 }
 
