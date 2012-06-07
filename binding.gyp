@@ -14,7 +14,7 @@
       'defines': [
         'VERSION=0.5.0'
       ],
-      'sources': [ 'src/bindings.cpp', 'src/freeimage.cpp', 'src/image.cpp' ],
+      'sources': [ 'src/bindings.cpp', 'src/FreeImage.cpp', 'src/Image.cpp' ],
       'conditions': [
         ['OS=="linux"', {'libraries': ['-lFreeImage']}],
         ['OS=="mac"', {'libraries': ['-lFreeImage']}],
