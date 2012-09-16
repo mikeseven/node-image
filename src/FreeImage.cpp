@@ -8,6 +8,8 @@
 #include "FreeImage.h"
 #include "Image.h"
 
+#include <node_buffer.h>
+
 #include <iostream>
 using namespace std;
 
@@ -37,6 +39,7 @@ void FreeImage::Initialize(Handle<Object> target) {
 
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "getVersion", getVersion);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "load", load);
+  NODE_SET_PROTOTYPE_METHOD(constructor_template, "loadFromMemory", loadFromMemory);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "save", save);
 
   target->Set(JS_STR("FreeImage"), constructor_template->GetFunction());
@@ -93,6 +96,26 @@ JS_METHOD(FreeImage::load) {
   image->Set(JS_STR("buffer"), buf->handle_);
 
   return scope.Close(image);*/
+  return scope.Close(Image::New(dib)->handle_);
+}
+
+JS_METHOD(FreeImage::loadFromMemory) {
+  HandleScope scope;
+
+  Local<Object> bufferObj    = args[0]->ToObject();
+  BYTE*         bufferData   = (BYTE*) Buffer::Data(bufferObj);
+  size_t        bufferLength = Buffer::Length(bufferObj);
+
+  FIMEMORY *hmem = FreeImage_OpenMemory(bufferData, bufferLength);
+
+  FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromMemory(hmem, 0);
+  FIBITMAP *dib = FreeImage_LoadFromMemory(fif, hmem, 0);
+  FreeImage_CloseMemory(hmem);
+
+  // check that dib does not contains pixels
+  if(!dib) return Undefined();
+  if(!FreeImage_HasPixels(dib)) return Undefined();
+
   return scope.Close(Image::New(dib)->handle_);
 }
 

@@ -35,6 +35,7 @@ void Image::Initialize(Handle<Object> target) {
 
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "unload", unload);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "save", save);
+  NODE_SET_PROTOTYPE_METHOD(constructor_template, "saveToMemory", saveToMemory);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "convertTo32Bits", convertTo32Bits);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "convertTo24Bits", convertTo24Bits);
 
@@ -110,6 +111,47 @@ JS_METHOD(Image::save) {
   FreeImage_Save(fif,dib,*str,flags);
 
   return Undefined();
+}
+
+JS_METHOD(Image::saveToMemory) {
+  HandleScope scope;
+
+  Local<External> wrap = Local<External>::Cast(args.This()->GetInternalField(0));
+  FIBITMAP *dib=static_cast<FIBITMAP*>(wrap->Value());
+  //cout<<"dib "<<hex<<dib<<dec<<endl;
+
+  FREE_IMAGE_FORMAT fif=(FREE_IMAGE_FORMAT) args[0]->Uint32Value();
+
+  String::Utf8Value str(args[1]->ToString());
+  int flags=0;
+  if(!args[2]->IsUndefined()) {
+    flags=args[2]->Int32Value();
+  }
+
+  if(fif==FIF_JPEG && FreeImage_GetBPP(dib)!=24) {
+    // FIBITMAP *old=dib;
+    dib=FreeImage_ConvertTo24Bits(dib);
+    // FreeImage_Unload(old);
+  }
+
+  BYTE *mem_buffer = NULL;
+  DWORD file_size;
+  FIMEMORY *hmem = FreeImage_OpenMemory();
+
+  FreeImage_SaveToMemory(fif,dib,hmem,flags);
+
+  FreeImage_AcquireMemory(hmem, &mem_buffer, &file_size);
+  Buffer *slowBuffer = Buffer::New(file_size);
+  memcpy(Buffer::Data(slowBuffer), (char*) mem_buffer,(size_t) file_size);
+
+  FreeImage_CloseMemory(hmem);
+
+  Local<Object> globalObj = Context::GetCurrent()->Global();
+  Local<Function> bufferConstructor = Local<Function>::Cast(globalObj->Get(String::New("Buffer")));
+  Handle<Value> constructorArgs[3] = { slowBuffer->handle_, v8::Integer::New(file_size), v8::Integer::New(0) };
+  Local<Object> actualBuffer = bufferConstructor->NewInstance(3, constructorArgs);
+
+  return scope.Close(actualBuffer);
 }
 
 JS_METHOD(Image::convertTo32Bits) {

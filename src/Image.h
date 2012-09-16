@@ -27,6 +27,7 @@ public:
 
   static JS_METHOD(unload);
   static JS_METHOD(save);
+  static JS_METHOD(saveToMemory);
   static JS_METHOD(convertTo32Bits);
   static JS_METHOD(convertTo24Bits);
 
