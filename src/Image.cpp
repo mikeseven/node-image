@@ -20,7 +20,7 @@ Persistent<FunctionTemplate> Image::constructor_template;
 
 Image::Image(Handle<Object> wrapper) : dib(NULL) {}
 Image::~Image() {
-  cout<<"Deleting image"<<endl;
+  // cout<<"Deleting image"<<endl;
   if(dib) ::FreeImage_Unload(dib);
 }
 
