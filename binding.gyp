@@ -17,7 +17,10 @@
       'sources': [ 'src/bindings.cpp', 'src/FreeImage.cpp', 'src/Image.cpp' ],
       'conditions': [
         ['OS=="linux"', {'libraries': ['-lfreeimage']}],
-        ['OS=="mac"', {'libraries': ['-lfreeimage']}],
+        ['OS=="mac"', {
+          'libraries': ['-lfreeimage', '-L/opt/local/lib', '-L/usr/local/lib'],
+          'include_dirs': ['/opt/local/include', '/usr/local/include']
+          }],
         ['OS=="win"', {
           'libraries': [
             'FreeImage64.lib'
