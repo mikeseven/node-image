@@ -102,7 +102,7 @@ JS_METHOD(Image::save) {
     flags=args[2]->Int32Value();
   }
 
-  cout<<"Saving image to "<<*str<<" format: "<<hex<<fif<<dec<<" flags: "<<hex<<flags<<dec<<endl;
+  // cout<<"Saving image to "<<*str<<" format: "<<hex<<fif<<dec<<" flags: "<<hex<<flags<<dec<<endl;
   if(fif==FIF_JPEG && FreeImage_GetBPP(dib)!=24) {
     //FIBITMAP *old=dib;
     dib=FreeImage_ConvertTo24Bits(dib);
