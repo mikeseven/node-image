@@ -122,10 +122,9 @@ JS_METHOD(Image::saveToMemory) {
 
   FREE_IMAGE_FORMAT fif=(FREE_IMAGE_FORMAT) args[0]->Uint32Value();
 
-  String::Utf8Value str(args[1]->ToString());
   int flags=0;
-  if(!args[2]->IsUndefined()) {
-    flags=args[2]->Int32Value();
+  if(!args[1]->IsUndefined()) {
+    flags=args[1]->Int32Value();
   }
 
   if(fif==FIF_JPEG && FreeImage_GetBPP(dib)!=24) {
