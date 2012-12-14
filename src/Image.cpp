@@ -39,6 +39,9 @@ void Image::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "convertTo32Bits", convertTo32Bits);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "convertTo24Bits", convertTo24Bits);
 
+  NODE_SET_PROTOTYPE_METHOD(constructor_template, "flipHorizontal", flipHorizontal);
+  NODE_SET_PROTOTYPE_METHOD(constructor_template, "flipVertical", flipVertical);
+
   target->Set(JS_STR("Image"), constructor_template->GetFunction());
 }
 
@@ -169,6 +172,27 @@ JS_METHOD(Image::convertTo24Bits) {
   FIBITMAP *conv=FreeImage_ConvertTo24Bits(dib);
 
   return scope.Close(Image::New(conv)->handle_);
+}
+
+
+JS_METHOD(Image::flipHorizontal) {
+  HandleScope scope;
+
+  Local<External> wrap = Local<External>::Cast(args.This()->GetInternalField(0));
+  FIBITMAP *dib = static_cast<FIBITMAP *>(wrap->Value());
+  BOOL flip = FreeImage_FlipHorizontal(dib);
+
+  return scope.Close(Boolean::New(flip));
+}
+
+JS_METHOD(Image::flipVertical) {
+  HandleScope scope;
+
+  Local<External> wrap = Local<External>::Cast(args.This()->GetInternalField(0));
+  FIBITMAP *dib = static_cast<FIBITMAP *>(wrap->Value());
+  BOOL flip = FreeImage_FlipVertical(dib);
+
+  return scope.Close(Boolean::New(flip));
 }
 
 }

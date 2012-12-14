@@ -31,6 +31,9 @@ public:
   static JS_METHOD(convertTo32Bits);
   static JS_METHOD(convertTo24Bits);
 
+  static JS_METHOD(flipHorizontal);
+  static JS_METHOD(flipVertical);
+
 private:
   Image(Handle<Object> wrapper);
   static Persistent<FunctionTemplate> constructor_template;
