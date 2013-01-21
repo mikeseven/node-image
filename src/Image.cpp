@@ -5,6 +5,8 @@
 ** (c) Copyright 2011 Motorola Mobility, Inc.  All Rights Reserved.  **
 */
 
+#include "string.h"
+
 #include "Image.h"
 #include <node_buffer.h>
 
