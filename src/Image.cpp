@@ -87,9 +87,14 @@ Image *Image::New(FIBITMAP* dib) {
 
 JS_METHOD(Image::unload) {
   HandleScope scope;
-  Local<External> wrap = Local<External>::Cast(args.This()->GetInternalField(0));
-  FIBITMAP *dib=static_cast<FIBITMAP*>(wrap->Value());
-  FreeImage_Unload(dib);
+
+  Local<Value> internalField = args.This()->GetInternalField(0);
+  if (!internalField->IsNull()) {
+    FIBITMAP *dib = static_cast<FIBITMAP*>(Local<External>::Cast(internalField)->Value());
+    if (dib) FreeImage_Unload(dib);
+    args.This()->SetInternalField(0, v8::Null());
+  }
+
   return Undefined();
 }
 
