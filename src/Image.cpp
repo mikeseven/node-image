@@ -26,7 +26,7 @@ Image::~Image() {
   if (internalField->IsNull()) return;
 
   FIBITMAP *dib = static_cast<FIBITMAP*>(Local<External>::Cast(internalField)->Value());
-  if (dib) FreeImage_Unload(dib);
+  FreeImage_Unload(dib);
 }
 
 void Image::Initialize(Handle<Object> target) {
@@ -91,7 +91,7 @@ JS_METHOD(Image::unload) {
   Local<Value> internalField = args.This()->GetInternalField(0);
   if (!internalField->IsNull()) {
     FIBITMAP *dib = static_cast<FIBITMAP*>(Local<External>::Cast(internalField)->Value());
-    if (dib) FreeImage_Unload(dib);
+    FreeImage_Unload(dib);
     args.This()->SetInternalField(0, v8::Null());
   }
 
@@ -103,7 +103,6 @@ JS_METHOD(Image::save) {
 
   Local<External> wrap = Local<External>::Cast(args.This()->GetInternalField(0));
   FIBITMAP *dib=static_cast<FIBITMAP*>(wrap->Value());
-  //cout<<"dib "<<hex<<dib<<dec<<endl;
 
   FREE_IMAGE_FORMAT fif=(FREE_IMAGE_FORMAT) args[0]->Uint32Value();
 
