@@ -49,7 +49,7 @@ void FreeImage::Initialize(Handle<Object> target) {
 
 
 void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char *message) {
-  cout << 'Error: ' << message << endl;
+  cout << "Error: " << message << endl;
 }
 
 
