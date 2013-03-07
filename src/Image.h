@@ -37,8 +37,6 @@ public:
 private:
   Image(Handle<Object> wrapper);
   static Persistent<FunctionTemplate> constructor_template;
-
-  FIBITMAP *dib;
 };
 
 };

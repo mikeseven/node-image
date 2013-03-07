@@ -49,7 +49,7 @@ void FreeImage::Initialize(Handle<Object> target) {
 
 
 void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char *message) {
-  cout << 'Error: ' << message << endl;
+  cout << "Error: " << message << endl;
 }
 
 
@@ -84,29 +84,6 @@ JS_METHOD(FreeImage::load) {
   if(!dib) return Undefined();
   if(!FreeImage_HasPixels(dib)) return Undefined();
 
-  //cout<<"dib "<<hex<<dib<<dec<<endl;
-  /*FREE_IMAGE_TYPE type = FreeImage_GetImageType(dib);
-  int w=0,h=0,pitch=0;
-
-  Handle<ObjectTemplate> obj = ObjectTemplate::New();
-  obj->SetInternalFieldCount(1);
-
-  Local<Object> image = obj->NewInstance();
-  image->SetInternalField(0, External::New(dib));
-  image->Set(JS_STR("width"), JS_INT(w=FreeImage_GetWidth(dib)));
-  image->Set(JS_STR("height"), JS_INT(h=FreeImage_GetHeight(dib)));
-  image->Set(JS_STR("bpp"), JS_INT(FreeImage_GetBPP(dib)));
-  image->Set(JS_STR("pitch"), JS_INT(pitch=FreeImage_GetPitch(dib)));
-  image->Set(JS_STR("type"), JS_INT(type));
-  image->Set(JS_STR("redMask"), JS_INT(FreeImage_GetRedMask(dib)));
-  image->Set(JS_STR("greenMask"), JS_INT(FreeImage_GetGreenMask(dib)));
-  image->Set(JS_STR("blueMask"), JS_INT(FreeImage_GetBlueMask(dib)));
-
-  BYTE *bits=FreeImage_GetBits(dib);
-  node::Buffer *buf = node::Buffer::New((char*)bits,h*pitch);
-  image->Set(JS_STR("buffer"), buf->handle_);
-
-  return scope.Close(image);*/
   return scope.Close(Image::New(dib)->handle_);
 }
 

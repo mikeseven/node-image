@@ -20,10 +20,13 @@ namespace freeimage {
 
 Persistent<FunctionTemplate> Image::constructor_template;
 
-Image::Image(Handle<Object> wrapper) : dib(NULL) {}
+Image::Image(Handle<Object> wrapper) {}
 Image::~Image() {
-  // cout<<"Deleting image"<<endl;
-  if(dib) ::FreeImage_Unload(dib);
+  Local<Value> internalField = handle_->GetInternalField(0);
+  if (internalField->IsNull()) return;
+
+  FIBITMAP *dib = static_cast<FIBITMAP*>(Local<External>::Cast(internalField)->Value());
+  FreeImage_Unload(dib);
 }
 
 void Image::Initialize(Handle<Object> target) {
@@ -55,14 +58,12 @@ JS_METHOD(Image::New) {
 }
 
 Image *Image::New(FIBITMAP* dib) {
-
   HandleScope scope;
 
   Local<Value> arg = Integer::NewFromUnsigned(0);
   Local<Object> obj = constructor_template->GetFunction()->NewInstance(1, &arg);
 
   Image *image = ObjectWrap::Unwrap<Image>(obj);
-  image->dib = dib;
 
   int w,h,pitch;
   FREE_IMAGE_TYPE type = FreeImage_GetImageType(dib);
@@ -86,9 +87,14 @@ Image *Image::New(FIBITMAP* dib) {
 
 JS_METHOD(Image::unload) {
   HandleScope scope;
-  Local<External> wrap = Local<External>::Cast(args.This()->GetInternalField(0));
-  FIBITMAP *dib=static_cast<FIBITMAP*>(wrap->Value());
-  FreeImage_Unload(dib);
+
+  Local<Value> internalField = args.This()->GetInternalField(0);
+  if (!internalField->IsNull()) {
+    FIBITMAP *dib = static_cast<FIBITMAP*>(Local<External>::Cast(internalField)->Value());
+    FreeImage_Unload(dib);
+    args.This()->SetInternalField(0, v8::Null());
+  }
+
   return Undefined();
 }
 
@@ -97,7 +103,6 @@ JS_METHOD(Image::save) {
 
   Local<External> wrap = Local<External>::Cast(args.This()->GetInternalField(0));
   FIBITMAP *dib=static_cast<FIBITMAP*>(wrap->Value());
-  //cout<<"dib "<<hex<<dib<<dec<<endl;
 
   FREE_IMAGE_FORMAT fif=(FREE_IMAGE_FORMAT) args[0]->Uint32Value();
 
