@@ -1,6 +1,6 @@
 {
    "name": "node-image",
-   "version": "0.5.0",
+   "version": "0.5.1",
    "description": "A Node.JS wrapper around FreeImage",
    "main": "lib/image.js",
    "author": "Mikael Bourges-Sevenier <mikeseven@gmail.com>",
@@ -44,19 +44,17 @@
        "url": "http://github.com/mikeseven/node-image/raw/master/LICENSES" 
      }
    ],
-   "repositories": [
-       {
-           "type": "git",
-           "url": "https://mikeseven@github.com/mikeseven/node-image.git" 
-       } 
-   ],
+   "repository": {
+       "type": "git",
+       "url": "https://mikeseven@github.com/mikeseven/node-image.git" 
+   },
    "directories": {
        "src": "src",
        "lib": "lib",
        "test": "test"
    },
    "engines": {
-       "node": ">=0.5.9"
+       "node": "0.5.9-0.11.3"
    },
    "scripts": {
        "install": "node-gyp rebuild"
