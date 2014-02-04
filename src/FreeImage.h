@@ -25,6 +25,8 @@ public:
 
   static JS_METHOD(getVersion);
   static JS_METHOD(load);
+  static JS_METHOD(loadFromMemory);
+  static JS_METHOD(convertFromRawBits);
   static JS_METHOD(save);
 
 protected:

@@ -8,6 +8,8 @@
 #include "FreeImage.h"
 #include "Image.h"
 
+#include <node_buffer.h>
+
 #include <iostream>
 using namespace std;
 
@@ -37,16 +39,28 @@ void FreeImage::Initialize(Handle<Object> target) {
 
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "getVersion", getVersion);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "load", load);
+  NODE_SET_PROTOTYPE_METHOD(constructor_template, "loadFromMemory", loadFromMemory);
+  NODE_SET_PROTOTYPE_METHOD(constructor_template, "convertFromRawBits", convertFromRawBits);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "save", save);
 
   target->Set(JS_STR("FreeImage"), constructor_template->GetFunction());
 }
 
 
+
+void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char *message) {
+  cout << "Error: " << message << endl;
+}
+
+
+
 JS_METHOD(FreeImage::New) {
   HandleScope scope;
   FreeImage *fi = new FreeImage(args.This());
   fi->Wrap(args.This());
+
+  FreeImage_SetOutputMessage(FreeImageErrorHandler);
+
   return scope.Close(args.This());
 }
 
@@ -70,29 +84,58 @@ JS_METHOD(FreeImage::load) {
   if(!dib) return Undefined();
   if(!FreeImage_HasPixels(dib)) return Undefined();
 
-  //cout<<"dib "<<hex<<dib<<dec<<endl;
-  /*FREE_IMAGE_TYPE type = FreeImage_GetImageType(dib);
-  int w=0,h=0,pitch=0;
+  return scope.Close(Image::New(dib)->handle_);
+}
 
-  Handle<ObjectTemplate> obj = ObjectTemplate::New();
-  obj->SetInternalFieldCount(1);
+JS_METHOD(FreeImage::loadFromMemory) {
+  HandleScope scope;
 
-  Local<Object> image = obj->NewInstance();
-  image->SetInternalField(0, External::New(dib));
-  image->Set(JS_STR("width"), JS_INT(w=FreeImage_GetWidth(dib)));
-  image->Set(JS_STR("height"), JS_INT(h=FreeImage_GetHeight(dib)));
-  image->Set(JS_STR("bpp"), JS_INT(FreeImage_GetBPP(dib)));
-  image->Set(JS_STR("pitch"), JS_INT(pitch=FreeImage_GetPitch(dib)));
-  image->Set(JS_STR("type"), JS_INT(type));
-  image->Set(JS_STR("redMask"), JS_INT(FreeImage_GetRedMask(dib)));
-  image->Set(JS_STR("greenMask"), JS_INT(FreeImage_GetGreenMask(dib)));
-  image->Set(JS_STR("blueMask"), JS_INT(FreeImage_GetBlueMask(dib)));
+  Local<Object> bufferObj    = args[0]->ToObject();
+  BYTE*         bufferData   = (BYTE*) Buffer::Data(bufferObj);
+  size_t        bufferLength = Buffer::Length(bufferObj);
 
-  BYTE *bits=FreeImage_GetBits(dib);
-  node::Buffer *buf = node::Buffer::New((char*)bits,h*pitch);
-  image->Set(JS_STR("buffer"), buf->handle_);
+  FIMEMORY *hmem = FreeImage_OpenMemory(bufferData, bufferLength);
 
-  return scope.Close(image);*/
+  FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromMemory(hmem, 0);
+  FIBITMAP *dib = FreeImage_LoadFromMemory(fif, hmem, 0);
+  FreeImage_CloseMemory(hmem);
+
+  // check that dib does not contains pixels
+  if(!dib) return Undefined();
+  if(!FreeImage_HasPixels(dib)) return Undefined();
+
+  return scope.Close(Image::New(dib)->handle_);
+}
+
+JS_METHOD(FreeImage::convertFromRawBits) {
+  HandleScope scope;
+
+  Local<Object> bufferObj    = args[0]->ToObject();
+  BYTE*         bufferData   = (BYTE*) Buffer::Data(bufferObj);
+
+  uint32_t width  = args[1]->Int32Value();
+  uint32_t height = args[2]->Int32Value();
+  uint32_t pitch=width*4, bpp=32;
+  uint32_t redMask=0xFF000000, greenMask=0x00FF0000, blueMask=0x0000FF00;
+  BOOL topdown = FALSE;
+
+  if(args.Length()>3) pitch=args[3]->Uint32Value();
+  if(args.Length()>4) bpp=args[4]->Uint32Value();
+  if(args.Length()>5) redMask=args[5]->Uint32Value();
+  if(args.Length()>6) greenMask=args[6]->Uint32Value();
+  if(args.Length()>7) blueMask=args[7]->Uint32Value();
+  if(args.Length()>8) topdown=args[8]->BooleanValue();
+
+// cout<<"convertFromRawBits: wxh: "<<width<<"x"<<height<<" bpp: "<<bpp<<" pitch: "<<pitch<<endl;
+
+  FIBITMAP *dib =
+    FreeImage_ConvertFromRawBits(bufferData, width, height, pitch, bpp,
+                                 redMask, greenMask, blueMask, topdown);
+
+  // check that dib does not contains pixels
+  if(!dib) return Undefined();
+  if(!FreeImage_HasPixels(dib)) return Undefined();
+
   return scope.Close(Image::New(dib)->handle_);
 }
 
