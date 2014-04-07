@@ -12,7 +12,10 @@
       #'target_name': 'image-<(platform)-<(target_arch)',
       'target_name': 'image',
       'defines': [
-        'VERSION=0.5.0'
+        'VERSION=0.6.0'
+      ],
+      'include_dirs' : [
+        "<!(node -e \"require('nan')\")",
       ],
       'sources': [ 'src/bindings.cpp', 'src/FreeImage.cpp', 'src/Image.cpp' ],
       'conditions': [

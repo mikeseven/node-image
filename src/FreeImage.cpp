@@ -27,7 +27,7 @@ FreeImage::~FreeImage() {
 }
 
 void FreeImage::Initialize(Handle<Object> target) {
-  HandleScope scope;
+  NanScope();
 
   Local<FunctionTemplate> t = FunctionTemplate::New(New);
   constructor_template = Persistent<FunctionTemplate>::New(t);
@@ -43,20 +43,20 @@ void FreeImage::Initialize(Handle<Object> target) {
 }
 
 
-JS_METHOD(FreeImage::New) {
-  HandleScope scope;
+NAN_METHOD(FreeImage::New) {
+  NanScope();
   FreeImage *fi = new FreeImage(args.This());
   fi->Wrap(args.This());
-  return scope.Close(args.This());
+  NanReturnValue(args.This());
 }
 
-JS_METHOD(FreeImage::getVersion) {
-  HandleScope scope;
-  return scope.Close(JS_STR(FreeImage_GetVersion()));
+NAN_METHOD(FreeImage::getVersion) {
+  NanScope();
+  NanReturnValue(JS_STR(FreeImage_GetVersion()));
 }
 
-JS_METHOD(FreeImage::load) {
-  HandleScope scope;
+NAN_METHOD(FreeImage::load) {
+  NanScope();
 
   String::Utf8Value filename(args[0]->ToString());
 
@@ -67,8 +67,8 @@ JS_METHOD(FreeImage::load) {
     dib = FreeImage_Load(fif, *filename);
 
   // check that dib does not contains pixels
-  if(!dib) return Undefined();
-  if(!FreeImage_HasPixels(dib)) return Undefined();
+  if(!dib) NanReturnUndefined();
+  if(!FreeImage_HasPixels(dib)) NanReturnUndefined();
 
   //cout<<"dib "<<hex<<dib<<dec<<endl;
   /*FREE_IMAGE_TYPE type = FreeImage_GetImageType(dib);
@@ -92,12 +92,12 @@ JS_METHOD(FreeImage::load) {
   node::Buffer *buf = node::Buffer::New((char*)bits,h*pitch);
   image->Set(JS_STR("buffer"), buf->handle_);
 
-  return scope.Close(image);*/
-  return scope.Close(Image::New(dib)->handle_);
+  NanReturnValue(image);*/
+  NanReturnValue(Image::New(dib)->handle_);
 }
 
-JS_METHOD(FreeImage::save) {
-  HandleScope scope;
+NAN_METHOD(FreeImage::save) {
+  NanScope();
   String::Utf8Value filename(args[0]->ToString());
   cout<<"args length: "<<args.Length()<<endl;
 
@@ -133,7 +133,7 @@ JS_METHOD(FreeImage::save) {
     image=FreeImage_ConvertTo24Bits(image);
     FreeImage_Unload(old);
   }
-  return scope.Close(Boolean::New((FreeImage_Save(format, image, *filename) == TRUE) ? true : false));
+  NanReturnValue(Boolean::New((FreeImage_Save(format, image, *filename) == TRUE) ? true : false));
 }
 
 }

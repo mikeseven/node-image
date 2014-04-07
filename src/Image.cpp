@@ -25,7 +25,7 @@ Image::~Image() {
 }
 
 void Image::Initialize(Handle<Object> target) {
-  HandleScope scope;
+  NanScope();
 
   Local<FunctionTemplate> t = FunctionTemplate::New(Image::New);
   constructor_template = Persistent<FunctionTemplate>::New(t);
@@ -41,16 +41,16 @@ void Image::Initialize(Handle<Object> target) {
   target->Set(JS_STR("Image"), constructor_template->GetFunction());
 }
 
-JS_METHOD(Image::New) {
-  HandleScope scope;
+NAN_METHOD(Image::New) {
+  NanScope();
   Image *fi = new Image(args.This());
   fi->Wrap(args.This());
-  return scope.Close(args.This());
+  NanReturnValue(args.This());
 }
 
 Image *Image::New(FIBITMAP* dib) {
 
-  HandleScope scope;
+  NanScope();
 
   Local<Value> arg = Integer::NewFromUnsigned(0);
   Local<Object> obj = constructor_template->GetFunction()->NewInstance(1, &arg);
@@ -78,16 +78,16 @@ Image *Image::New(FIBITMAP* dib) {
   return image;
 }
 
-JS_METHOD(Image::unload) {
-  HandleScope scope;
+NAN_METHOD(Image::unload) {
+  NanScope();
   Local<External> wrap = Local<External>::Cast(args.This()->GetInternalField(0));
   FIBITMAP *dib=static_cast<FIBITMAP*>(wrap->Value());
   FreeImage_Unload(dib);
-  return Undefined();
+  NanReturnUndefined();
 }
 
-JS_METHOD(Image::save) {
-  HandleScope scope;
+NAN_METHOD(Image::save) {
+  NanScope();
 
   Local<External> wrap = Local<External>::Cast(args.This()->GetInternalField(0));
   FIBITMAP *dib=static_cast<FIBITMAP*>(wrap->Value());
@@ -109,25 +109,25 @@ JS_METHOD(Image::save) {
   }
   FreeImage_Save(fif,dib,*str,flags);
 
-  return Undefined();
+  NanReturnUndefined();
 }
 
-JS_METHOD(Image::convertTo32Bits) {
-  HandleScope scope;
+NAN_METHOD(Image::convertTo32Bits) {
+  NanScope();
   Local<External> wrap = Local<External>::Cast(args.This()->GetInternalField(0));
   FIBITMAP *dib=static_cast<FIBITMAP*>(wrap->Value());
   FIBITMAP *conv=FreeImage_ConvertTo32Bits(dib);
 
-  return scope.Close(Image::New(conv)->handle_);
+  NanReturnValue(Image::New(conv)->handle_);
 }
 
-JS_METHOD(Image::convertTo24Bits) {
-  HandleScope scope;
+NAN_METHOD(Image::convertTo24Bits) {
+  NanScope();
   Local<External> wrap = Local<External>::Cast(args.This()->GetInternalField(0));
   FIBITMAP *dib=static_cast<FIBITMAP*>(wrap->Value());
   FIBITMAP *conv=FreeImage_ConvertTo24Bits(dib);
 
-  return scope.Close(Image::New(conv)->handle_);
+  NanReturnValue(Image::New(conv)->handle_);
 }
 
 }
