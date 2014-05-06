@@ -8,5 +8,6 @@ Requirements
 ------------
 - libfreeimage-dev, at least 3.15.0
 - node.js, at least 0.5.9
+- nan
 
 

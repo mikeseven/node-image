@@ -22,13 +22,13 @@ class Image : public node::ObjectWrap
 public:
   ~Image();
   static void Initialize(Handle<Object> target);
-  static JS_METHOD(New);
+  static NAN_METHOD(New);
   static Image *New(FIBITMAP* image);
 
-  static JS_METHOD(unload);
-  static JS_METHOD(save);
-  static JS_METHOD(convertTo32Bits);
-  static JS_METHOD(convertTo24Bits);
+  static NAN_METHOD(unload);
+  static NAN_METHOD(save);
+  static NAN_METHOD(convertTo32Bits);
+  static NAN_METHOD(convertTo24Bits);
 
 private:
   Image(Handle<Object> wrapper);
