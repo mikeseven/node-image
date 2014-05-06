@@ -23,7 +23,7 @@ public:
 
   static NAN_METHOD(New);
 
-  static NAN_METHOD(getVersion);
+  static NAN_GETTER(getVersion);
   static NAN_METHOD(load);
   static NAN_METHOD(save);
 

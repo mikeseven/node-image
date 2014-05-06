@@ -27,18 +27,20 @@ Image::~Image() {
 void Image::Initialize(Handle<Object> target) {
   NanScope();
 
-  Local<FunctionTemplate> t = FunctionTemplate::New(Image::New);
-  constructor_template = Persistent<FunctionTemplate>::New(t);
+  // constructor
+  Local<FunctionTemplate> ctor = FunctionTemplate::New(Image::New);
+  NanAssignPersistent(FunctionTemplate, constructor_template, ctor);
+  ctor->InstanceTemplate()->SetInternalFieldCount(1);
+  ctor->SetClassName(JS_STR("Image"));
 
-  constructor_template->InstanceTemplate()->SetInternalFieldCount(1);
-  constructor_template->SetClassName(JS_STR("Image"));
+  // prototype
+  //Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
+  NODE_SET_PROTOTYPE_METHOD(ctor, "unload", unload);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "save", save);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "convertTo32Bits", convertTo32Bits);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "convertTo24Bits", convertTo24Bits);
 
-  NODE_SET_PROTOTYPE_METHOD(constructor_template, "unload", unload);
-  NODE_SET_PROTOTYPE_METHOD(constructor_template, "save", save);
-  NODE_SET_PROTOTYPE_METHOD(constructor_template, "convertTo32Bits", convertTo32Bits);
-  NODE_SET_PROTOTYPE_METHOD(constructor_template, "convertTo24Bits", convertTo24Bits);
-
-  target->Set(JS_STR("Image"), constructor_template->GetFunction());
+  target->Set(JS_STR("Image"), ctor->GetFunction());
 }
 
 NAN_METHOD(Image::New) {
@@ -53,8 +55,9 @@ Image *Image::New(FIBITMAP* dib) {
   NanScope();
 
   Local<Value> arg = Integer::NewFromUnsigned(0);
-  Local<Object> obj = constructor_template->GetFunction()->NewInstance(1, &arg);
-
+  Local<FunctionTemplate> constructorHandle = NanPersistentToLocal(constructor_template);
+  Local<Object> obj = constructorHandle->GetFunction()->NewInstance(1, &arg);
+  
   Image *image = ObjectWrap::Unwrap<Image>(obj);
   image->dib = dib;
 
@@ -72,8 +75,8 @@ Image *Image::New(FIBITMAP* dib) {
   obj->Set(JS_STR("blueMask"), JS_INT((int)FreeImage_GetBlueMask(dib)));
 
   BYTE *bits=FreeImage_GetBits(dib);
-  node::Buffer *buf = node::Buffer::New((char*)bits,h*pitch);
-  obj->Set(JS_STR("buffer"), buf->handle_);
+  v8::Local<v8::Object> buf = NanNewBufferHandle((char*)bits,h*pitch);
+  obj->Set(JS_STR("buffer"), buf);
 
   return image;
 }
@@ -118,7 +121,7 @@ NAN_METHOD(Image::convertTo32Bits) {
   FIBITMAP *dib=static_cast<FIBITMAP*>(wrap->Value());
   FIBITMAP *conv=FreeImage_ConvertTo32Bits(dib);
 
-  NanReturnValue(Image::New(conv)->handle_);
+  NanReturnValue(Image::New(conv)->handle());
 }
 
 NAN_METHOD(Image::convertTo24Bits) {
@@ -127,7 +130,7 @@ NAN_METHOD(Image::convertTo24Bits) {
   FIBITMAP *dib=static_cast<FIBITMAP*>(wrap->Value());
   FIBITMAP *conv=FreeImage_ConvertTo24Bits(dib);
 
-  NanReturnValue(Image::New(conv)->handle_);
+  NanReturnValue(Image::New(conv)->handle());
 }
 
 }

@@ -29,17 +29,19 @@ FreeImage::~FreeImage() {
 void FreeImage::Initialize(Handle<Object> target) {
   NanScope();
 
-  Local<FunctionTemplate> t = FunctionTemplate::New(New);
-  constructor_template = Persistent<FunctionTemplate>::New(t);
+  // constructor
+  Local<FunctionTemplate> ctor = FunctionTemplate::New(FreeImage::New);
+  NanAssignPersistent(FunctionTemplate, constructor_template, ctor);
+  ctor->InstanceTemplate()->SetInternalFieldCount(1);
+  ctor->SetClassName(JS_STR("FreeImage"));
 
-  constructor_template->InstanceTemplate()->SetInternalFieldCount(1);
-  constructor_template->SetClassName(JS_STR("FreeImage"));
+  // prototype
+  Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
+  NODE_SET_PROTOTYPE_METHOD(ctor, "load", load);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "save", save);
+  proto->SetAccessor(JS_STR("getVersion"), getVersion);
 
-  NODE_SET_PROTOTYPE_METHOD(constructor_template, "getVersion", getVersion);
-  NODE_SET_PROTOTYPE_METHOD(constructor_template, "load", load);
-  NODE_SET_PROTOTYPE_METHOD(constructor_template, "save", save);
-
-  target->Set(JS_STR("FreeImage"), constructor_template->GetFunction());
+  target->Set(JS_STR("FreeImage"), ctor->GetFunction());
 }
 
 
@@ -50,7 +52,7 @@ NAN_METHOD(FreeImage::New) {
   NanReturnValue(args.This());
 }
 
-NAN_METHOD(FreeImage::getVersion) {
+NAN_GETTER(FreeImage::getVersion) {
   NanScope();
   NanReturnValue(JS_STR(FreeImage_GetVersion()));
 }
@@ -90,10 +92,10 @@ NAN_METHOD(FreeImage::load) {
 
   BYTE *bits=FreeImage_GetBits(dib);
   node::Buffer *buf = node::Buffer::New((char*)bits,h*pitch);
-  image->Set(JS_STR("buffer"), buf->handle_);
+  image->Set(JS_STR("buffer"), buf->handle());
 
   NanReturnValue(image);*/
-  NanReturnValue(Image::New(dib)->handle_);
+  NanReturnValue(Image::New(dib)->handle());
 }
 
 NAN_METHOD(FreeImage::save) {
