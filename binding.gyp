@@ -12,7 +12,7 @@
       #'target_name': 'image-<(platform)-<(target_arch)',
       'target_name': 'image',
       'defines': [
-        'VERSION=0.7.1'
+        'VERSION=0.7.0'
       ],
       'include_dirs' : [
         "<!(node -e \"require('nan')\")",
