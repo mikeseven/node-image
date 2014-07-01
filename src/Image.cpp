@@ -121,7 +121,7 @@ NAN_METHOD(Image::convertTo32Bits) {
   FIBITMAP *dib=static_cast<FIBITMAP*>(wrap->Value());
   FIBITMAP *conv=FreeImage_ConvertTo32Bits(dib);
 
-  NanReturnValue(Image::New(conv)->handle());
+  NanReturnValue(NanObjectWrapHandle(Image::New(conv)));
 }
 
 NAN_METHOD(Image::convertTo24Bits) {
@@ -130,7 +130,7 @@ NAN_METHOD(Image::convertTo24Bits) {
   FIBITMAP *dib=static_cast<FIBITMAP*>(wrap->Value());
   FIBITMAP *conv=FreeImage_ConvertTo24Bits(dib);
 
-  NanReturnValue(Image::New(conv)->handle());
+  NanReturnValue(NanObjectWrapHandle(Image::New(conv)));
 }
 
 }

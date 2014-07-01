@@ -95,7 +95,7 @@ NAN_METHOD(FreeImage::load) {
   image->Set(JS_STR("buffer"), buf->handle());
 
   NanReturnValue(image);*/
-  NanReturnValue(Image::New(dib)->handle());
+  NanReturnValue(NanObjectWrapHandle(Image::New(dib)));
 }
 
 NAN_METHOD(FreeImage::save) {
