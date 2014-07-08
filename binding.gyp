@@ -21,14 +21,27 @@
       'conditions': [
         ['OS=="linux"', {'libraries': ['-lfreeimage']}],
         ['OS=="mac"', {'libraries': ['-lfreeimage']}],
-        ['OS=="win"', {
-          'libraries': [
-            'FreeImage64.lib'
+        ['OS=="win"',
+          {
+            'include_dirs': [
+              './deps/FreeImage/include'
+              ],
+            'library_dirs': [
+              './deps/FreeImage/windows/lib/<(target_arch)'
+              ],
+            'libraries': [
+              'FreeImage.lib'
+              ],
+            'defines' : [
+              'WIN32_LEAN_AND_MEAN',
+              'VC_EXTRALEAN'
             ],
-          'defines' : [
-            'WIN32_LEAN_AND_MEAN',
-            'VC_EXTRALEAN'
-          ]
+            'cflags' : [
+              '/O2','/Oy','/GL','/GF','/Gm-','/EHsc','/MT','/GS','/Gy','/GR-','/Gd'
+            ],
+            'ldflags' : [
+              '/OPT:REF','/OPT:ICF','/LTCG'
+            ]
           },
         ],
       ],
