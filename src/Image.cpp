@@ -16,11 +16,11 @@ using namespace v8;
 
 namespace freeimage {
 
-Persistent<FunctionTemplate> Image::constructor_template;
+Persistent<Function> Image::constructor_template;
 
 Image::Image(Handle<Object> wrapper) : dib(NULL) {}
 Image::~Image() {
-  cout<<"Deleting image"<<endl;
+  // cout<<"Deleting image"<<endl;
   if(dib) ::FreeImage_Unload(dib);
 }
 
@@ -29,7 +29,6 @@ void Image::Initialize(Handle<Object> target) {
 
   // constructor
   Local<FunctionTemplate> ctor = FunctionTemplate::New(Image::New);
-  NanAssignPersistent(FunctionTemplate, constructor_template, ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
   ctor->SetClassName(JS_STR("Image"));
 
@@ -40,6 +39,7 @@ void Image::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(ctor, "convertTo32Bits", convertTo32Bits);
   NODE_SET_PROTOTYPE_METHOD(ctor, "convertTo24Bits", convertTo24Bits);
 
+  NanAssignPersistent<Function>(constructor_template, ctor->GetFunction());
   target->Set(JS_STR("Image"), ctor->GetFunction());
 }
 
@@ -54,17 +54,16 @@ Image *Image::New(FIBITMAP* dib) {
 
   NanScope();
 
-  Local<Value> arg = Integer::NewFromUnsigned(0);
-  Local<FunctionTemplate> constructorHandle = NanPersistentToLocal(constructor_template);
-  Local<Object> obj = constructorHandle->GetFunction()->NewInstance(1, &arg);
-  
+  Local<Function> cons = NanNew<Function>(constructor_template);
+  Local<Object> obj = cons->NewInstance();
+
   Image *image = ObjectWrap::Unwrap<Image>(obj);
   image->dib = dib;
 
   int w,h,pitch;
   FREE_IMAGE_TYPE type = FreeImage_GetImageType(dib);
 
-  obj->SetInternalField(0, External::New(dib));
+  // obj->SetInternalField(0, External::New(dib));
   obj->Set(JS_STR("width"), JS_INT(w=FreeImage_GetWidth(dib)));
   obj->Set(JS_STR("height"), JS_INT(h=FreeImage_GetHeight(dib)));
   obj->Set(JS_STR("bpp"), JS_INT((int)FreeImage_GetBPP(dib)));
@@ -83,17 +82,22 @@ Image *Image::New(FIBITMAP* dib) {
 
 NAN_METHOD(Image::unload) {
   NanScope();
-  Local<External> wrap = Local<External>::Cast(args.This()->GetInternalField(0));
-  FIBITMAP *dib=static_cast<FIBITMAP*>(wrap->Value());
-  FreeImage_Unload(dib);
+  // cout<<"Unloading image DIBs"<<endl;
+
+  Image *image = ObjectWrap::Unwrap<Image>(args.This());
+  FreeImage_Unload(image->dib);
+  image->dib = NULL;
+
   NanReturnUndefined();
 }
 
 NAN_METHOD(Image::save) {
   NanScope();
 
-  Local<External> wrap = Local<External>::Cast(args.This()->GetInternalField(0));
-  FIBITMAP *dib=static_cast<FIBITMAP*>(wrap->Value());
+  // Local<External> wrap = Local<External>::Cast(args.This()->GetInternalField(0));
+  // FIBITMAP *dib=static_cast<FIBITMAP*>(wrap->Value());
+  Image *image = ObjectWrap::Unwrap<Image>(args.This());
+  FIBITMAP *dib=image->dib;
   //cout<<"dib "<<hex<<dib<<dec<<endl;
 
   FREE_IMAGE_FORMAT fif=(FREE_IMAGE_FORMAT) args[0]->Uint32Value();
@@ -117,20 +121,24 @@ NAN_METHOD(Image::save) {
 
 NAN_METHOD(Image::convertTo32Bits) {
   NanScope();
-  Local<External> wrap = Local<External>::Cast(args.This()->GetInternalField(0));
-  FIBITMAP *dib=static_cast<FIBITMAP*>(wrap->Value());
+  // Local<External> wrap = Local<External>::Cast(args.This()->GetInternalField(0));
+  // FIBITMAP *dib=static_cast<FIBITMAP*>(wrap->Value());
+  Image *image = ObjectWrap::Unwrap<Image>(args.This());
+  FIBITMAP *dib=image->dib;
   FIBITMAP *conv=FreeImage_ConvertTo32Bits(dib);
 
-  NanReturnValue(Image::New(conv)->handle());
+  NanReturnValue(NanObjectWrapHandle(Image::New(conv)));
 }
 
 NAN_METHOD(Image::convertTo24Bits) {
   NanScope();
-  Local<External> wrap = Local<External>::Cast(args.This()->GetInternalField(0));
-  FIBITMAP *dib=static_cast<FIBITMAP*>(wrap->Value());
+  // Local<External> wrap = Local<External>::Cast(args.This()->GetInternalField(0));
+  // FIBITMAP *dib=static_cast<FIBITMAP*>(wrap->Value());
+  Image *image = ObjectWrap::Unwrap<Image>(args.This());
+  FIBITMAP *dib=image->dib;
   FIBITMAP *conv=FreeImage_ConvertTo24Bits(dib);
 
-  NanReturnValue(Image::New(conv)->handle());
+  NanReturnValue(NanObjectWrapHandle(Image::New(conv)));
 }
 
 }
