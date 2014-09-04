@@ -1,9 +1,9 @@
 var Image=new require('../lib/image').Image,
-  util=require('util');
+  	util=require('util');
 
 var log=console.log;
 
-log('FreeImage version: '+Image.getVersion());
+log('FreeImage version: '+Image.version);
 
 var path=__dirname+'/mike_scooter.jpg';
 var image=Image.load(path);

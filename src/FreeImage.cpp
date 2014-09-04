@@ -16,7 +16,7 @@ using namespace v8;
 
 namespace freeimage {
 
-Persistent<FunctionTemplate> FreeImage::constructor_template;
+Persistent<Function> FreeImage::constructor_template;
 
 FreeImage::FreeImage(Handle<Object> wrapper) {
   FreeImage_Initialise(FALSE);
@@ -31,7 +31,6 @@ void FreeImage::Initialize(Handle<Object> target) {
 
   // constructor
   Local<FunctionTemplate> ctor = FunctionTemplate::New(FreeImage::New);
-  NanAssignPersistent(FunctionTemplate, constructor_template, ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
   ctor->SetClassName(JS_STR("FreeImage"));
 
@@ -39,8 +38,9 @@ void FreeImage::Initialize(Handle<Object> target) {
   Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
   NODE_SET_PROTOTYPE_METHOD(ctor, "load", load);
   NODE_SET_PROTOTYPE_METHOD(ctor, "save", save);
-  proto->SetAccessor(JS_STR("getVersion"), getVersion);
+  proto->SetAccessor(JS_STR("version"), getVersion);
 
+  NanAssignPersistent<Function>(constructor_template, ctor->GetFunction());
   target->Set(JS_STR("FreeImage"), ctor->GetFunction());
 }
 
@@ -95,7 +95,7 @@ NAN_METHOD(FreeImage::load) {
   image->Set(JS_STR("buffer"), buf->handle());
 
   NanReturnValue(image);*/
-  NanReturnValue(Image::New(dib)->handle());
+  NanReturnValue(NanObjectWrapHandle(Image::New(dib)));
 }
 
 NAN_METHOD(FreeImage::save) {

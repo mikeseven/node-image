@@ -33,7 +33,7 @@ protected:
 private:
   FreeImage(Handle<Object> wrapper);
 
-  static Persistent<FunctionTemplate> constructor_template;
+  static Persistent<Function> constructor_template;
 
 };
 
