@@ -30,13 +30,13 @@ Image::~Image() {
 }
 
 void Image::Initialize(Handle<Object> target) {
-  HandleScope scope;
+  NanScope();
 
   Local<FunctionTemplate> t = FunctionTemplate::New(Image::New);
   constructor_template = Persistent<FunctionTemplate>::New(t);
 
   constructor_template->InstanceTemplate()->SetInternalFieldCount(1);
-  constructor_template->SetClassName(JS_STR("Image"));
+  constructor_template->SetClassName(NanNew<String>("Image"));
 
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "unload", unload);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "save", save);
@@ -47,18 +47,20 @@ void Image::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "flipHorizontal", flipHorizontal);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "flipVertical", flipVertical);
 
-  target->Set(JS_STR("Image"), constructor_template->GetFunction());
+  target->Set(NanNew<String>("Image"), constructor_template->GetFunction());
 }
 
-JS_METHOD(Image::New) {
-  HandleScope scope;
+NAN_METHOD(Image::New) {
+  NanScope();
+
   Image *fi = new Image(args.This());
   fi->Wrap(args.This());
-  return scope.Close(args.This());
+
+  NanReturnThis();
 }
 
 Image *Image::New(FIBITMAP* dib) {
-  HandleScope scope;
+  NanScope();
 
   Local<Value> arg = Integer::NewFromUnsigned(0);
   Local<Object> obj = constructor_template->GetFunction()->NewInstance(1, &arg);
@@ -69,24 +71,24 @@ Image *Image::New(FIBITMAP* dib) {
   FREE_IMAGE_TYPE type = FreeImage_GetImageType(dib);
 
   obj->SetInternalField(0, External::New(dib));
-  obj->Set(JS_STR("width"), JS_INT(w=FreeImage_GetWidth(dib)));
-  obj->Set(JS_STR("height"), JS_INT(h=FreeImage_GetHeight(dib)));
-  obj->Set(JS_STR("bpp"), JS_INT((int)FreeImage_GetBPP(dib)));
-  obj->Set(JS_STR("pitch"), JS_INT(pitch=FreeImage_GetPitch(dib)));
-  obj->Set(JS_STR("type"), JS_INT(type));
-  obj->Set(JS_STR("redMask"), JS_INT((int)FreeImage_GetRedMask(dib)));
-  obj->Set(JS_STR("greenMask"), JS_INT((int)FreeImage_GetGreenMask(dib)));
-  obj->Set(JS_STR("blueMask"), JS_INT((int)FreeImage_GetBlueMask(dib)));
+  obj->Set(NanNew<String>("width"), NanNew<Integer>(w=FreeImage_GetWidth(dib)));
+  obj->Set(NanNew<String>("height"), NanNew<Integer>(h=FreeImage_GetHeight(dib)));
+  obj->Set(NanNew<String>("bpp"), NanNew<Integer>((int)FreeImage_GetBPP(dib)));
+  obj->Set(NanNew<String>("pitch"), NanNew<Integer>(pitch=FreeImage_GetPitch(dib)));
+  obj->Set(NanNew<String>("type"), NanNew<Integer>(type));
+  obj->Set(NanNew<String>("redMask"), NanNew<Integer>((int)FreeImage_GetRedMask(dib)));
+  obj->Set(NanNew<String>("greenMask"), NanNew<Integer>((int)FreeImage_GetGreenMask(dib)));
+  obj->Set(NanNew<String>("blueMask"), NanNew<Integer>((int)FreeImage_GetBlueMask(dib)));
 
   BYTE *bits=FreeImage_GetBits(dib);
   node::Buffer *buf = node::Buffer::New((char*)bits,h*pitch);
-  obj->Set(JS_STR("buffer"), buf->handle_);
+  obj->Set(NanNew<String>("buffer"), buf->handle_);
 
   return image;
 }
 
-JS_METHOD(Image::unload) {
-  HandleScope scope;
+NAN_METHOD(Image::unload) {
+  NanScope();
 
   Local<Value> internalField = args.This()->GetInternalField(0);
   if (!internalField->IsNull()) {
@@ -95,11 +97,11 @@ JS_METHOD(Image::unload) {
     args.This()->SetInternalField(0, v8::Null());
   }
 
-  return Undefined();
+  NanReturnUndefined();
 }
 
-JS_METHOD(Image::save) {
-  HandleScope scope;
+NAN_METHOD(Image::save) {
+  NanScope();
 
   Local<External> wrap = Local<External>::Cast(args.This()->GetInternalField(0));
   FIBITMAP *dib=static_cast<FIBITMAP*>(wrap->Value());
@@ -120,11 +122,11 @@ JS_METHOD(Image::save) {
   }
   FreeImage_Save(fif,dib,*str,flags);
 
-  return Undefined();
+  NanReturnUndefined();
 }
 
-JS_METHOD(Image::saveToMemory) {
-  HandleScope scope;
+NAN_METHOD(Image::saveToMemory) {
+  NanScope();
 
   Local<External> wrap = Local<External>::Cast(args.This()->GetInternalField(0));
   FIBITMAP *dib=static_cast<FIBITMAP*>(wrap->Value());
@@ -160,46 +162,48 @@ JS_METHOD(Image::saveToMemory) {
   Handle<Value> constructorArgs[3] = { slowBuffer->handle_, v8::Integer::New(file_size), v8::Integer::New(0) };
   Local<Object> actualBuffer = bufferConstructor->NewInstance(3, constructorArgs);
 
-  return scope.Close(actualBuffer);
+  NanReturnValue(actualBuffer);
 }
 
-JS_METHOD(Image::convertTo32Bits) {
-  HandleScope scope;
+NAN_METHOD(Image::convertTo32Bits) {
+  NanScope();
+
   Local<External> wrap = Local<External>::Cast(args.This()->GetInternalField(0));
   FIBITMAP *dib=static_cast<FIBITMAP*>(wrap->Value());
   FIBITMAP *conv=FreeImage_ConvertTo32Bits(dib);
 
-  return scope.Close(Image::New(conv)->handle_);
+  NanReturnValue(NanObjectWrapHandle(Image::New(conv)));
 }
 
-JS_METHOD(Image::convertTo24Bits) {
-  HandleScope scope;
+NAN_METHOD(Image::convertTo24Bits) {
+  NanScope();
+
   Local<External> wrap = Local<External>::Cast(args.This()->GetInternalField(0));
   FIBITMAP *dib=static_cast<FIBITMAP*>(wrap->Value());
   FIBITMAP *conv=FreeImage_ConvertTo24Bits(dib);
 
-  return scope.Close(Image::New(conv)->handle_);
+  NanReturnValue(NanObjectWrapHandle(Image::New(conv)));
 }
 
 
-JS_METHOD(Image::flipHorizontal) {
-  HandleScope scope;
+NAN_METHOD(Image::flipHorizontal) {
+  NanScope();
 
   Local<External> wrap = Local<External>::Cast(args.This()->GetInternalField(0));
   FIBITMAP *dib = static_cast<FIBITMAP *>(wrap->Value());
   BOOL flip = FreeImage_FlipHorizontal(dib);
 
-  return scope.Close(Boolean::New(flip));
+  NanReturnValue(NanNew<Boolean>(flip));
 }
 
-JS_METHOD(Image::flipVertical) {
-  HandleScope scope;
+NAN_METHOD(Image::flipVertical) {
+  NanScope();
 
   Local<External> wrap = Local<External>::Cast(args.This()->GetInternalField(0));
   FIBITMAP *dib = static_cast<FIBITMAP *>(wrap->Value());
   BOOL flip = FreeImage_FlipVertical(dib);
 
-  return scope.Close(Boolean::New(flip));
+  NanReturnValue(NanNew<Boolean>(flip));
 }
 
 }

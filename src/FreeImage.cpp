@@ -5,6 +5,8 @@
  ** (c) Copyright 2011 Motorola Mobility, Inc.  All Rights Reserved.  **
  */
 
+#include "nan.h"
+
 #include "FreeImage.h"
 #include "Image.h"
 
@@ -29,13 +31,13 @@ FreeImage::~FreeImage() {
 }
 
 void FreeImage::Initialize(Handle<Object> target) {
-  HandleScope scope;
+  NanScope();
 
   Local<FunctionTemplate> t = FunctionTemplate::New(New);
   constructor_template = Persistent<FunctionTemplate>::New(t);
 
   constructor_template->InstanceTemplate()->SetInternalFieldCount(1);
-  constructor_template->SetClassName(JS_STR("FreeImage"));
+  constructor_template->SetClassName(NanNew<String>("FreeImage"));
 
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "getVersion", getVersion);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "load", load);
@@ -43,34 +45,30 @@ void FreeImage::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "convertFromRawBits", convertFromRawBits);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "save", save);
 
-  target->Set(JS_STR("FreeImage"), constructor_template->GetFunction());
+  target->Set(NanNew<String>("FreeImage"), constructor_template->GetFunction());
 }
-
-
 
 void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char *message) {
   cout << "Error: " << message << endl;
 }
 
-
-
-JS_METHOD(FreeImage::New) {
-  HandleScope scope;
+NAN_METHOD(FreeImage::New) {
+  NanScope();
   FreeImage *fi = new FreeImage(args.This());
   fi->Wrap(args.This());
 
   FreeImage_SetOutputMessage(FreeImageErrorHandler);
 
-  return scope.Close(args.This());
+  NanReturnThis();
 }
 
-JS_METHOD(FreeImage::getVersion) {
-  HandleScope scope;
-  return scope.Close(JS_STR(FreeImage_GetVersion()));
+NAN_METHOD(FreeImage::getVersion) {
+  NanScope();
+  NanReturnValue(NanNew<String>(FreeImage_GetVersion()));
 }
 
-JS_METHOD(FreeImage::load) {
-  HandleScope scope;
+NAN_METHOD(FreeImage::load) {
+  NanScope();
 
   String::Utf8Value filename(args[0]->ToString());
 
@@ -84,11 +82,11 @@ JS_METHOD(FreeImage::load) {
   if(!dib) return Undefined();
   if(!FreeImage_HasPixels(dib)) return Undefined();
 
-  return scope.Close(Image::New(dib)->handle_);
+  NanReturnValue(NanObjectWrapHandle(Image::New(dib)));
 }
 
-JS_METHOD(FreeImage::loadFromMemory) {
-  HandleScope scope;
+NAN_METHOD(FreeImage::loadFromMemory) {
+  NanScope();
 
   Local<Object> bufferObj    = args[0]->ToObject();
   BYTE*         bufferData   = (BYTE*) Buffer::Data(bufferObj);
@@ -104,11 +102,11 @@ JS_METHOD(FreeImage::loadFromMemory) {
   if(!dib) return Undefined();
   if(!FreeImage_HasPixels(dib)) return Undefined();
 
-  return scope.Close(Image::New(dib)->handle_);
+  NanReturnValue(NanObjectWrapHandle(Image::New(dib)));
 }
 
-JS_METHOD(FreeImage::convertFromRawBits) {
-  HandleScope scope;
+NAN_METHOD(FreeImage::convertFromRawBits) {
+  NanScope();
 
   Local<Object> bufferObj    = args[0]->ToObject();
   BYTE*         bufferData   = (BYTE*) Buffer::Data(bufferObj);
@@ -136,11 +134,11 @@ JS_METHOD(FreeImage::convertFromRawBits) {
   if(!dib) return Undefined();
   if(!FreeImage_HasPixels(dib)) return Undefined();
 
-  return scope.Close(Image::New(dib)->handle_);
+  NanReturnValue(NanObjectWrapHandle(Image::New(dib)));
 }
 
-JS_METHOD(FreeImage::save) {
-  HandleScope scope;
+NAN_METHOD(FreeImage::save) {
+  NanScope();
   String::Utf8Value filename(args[0]->ToString());
   cout<<"args length: "<<args.Length()<<endl;
 
@@ -176,7 +174,7 @@ JS_METHOD(FreeImage::save) {
     image=FreeImage_ConvertTo24Bits(image);
     FreeImage_Unload(old);
   }
-  return scope.Close(Boolean::New((FreeImage_Save(format, image, *filename) == TRUE) ? true : false));
+  NanReturnValue(NanNew<Boolean>(FreeImage_Save(format, image, *filename) == TRUE));
 }
 
 }

@@ -15,6 +15,9 @@
         'VERSION=0.5.0'
       ],
       'sources': [ 'src/bindings.cpp', 'src/FreeImage.cpp', 'src/Image.cpp' ],
+      "include_dirs" : [
+        "<!(node -e \"require('nan')\")"
+      ],
       'conditions': [
         ['OS=="linux"', {'libraries': ['-lfreeimage']}],
         ['OS=="mac"', {

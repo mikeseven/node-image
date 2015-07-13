@@ -21,13 +21,13 @@ class FreeImage : public node::ObjectWrap
 public:
   static void Initialize(Handle<Object> target);
 
-  static JS_METHOD(New);
+  static NAN_METHOD(New);
 
-  static JS_METHOD(getVersion);
-  static JS_METHOD(load);
-  static JS_METHOD(loadFromMemory);
-  static JS_METHOD(convertFromRawBits);
-  static JS_METHOD(save);
+  static NAN_METHOD(getVersion);
+  static NAN_METHOD(load);
+  static NAN_METHOD(loadFromMemory);
+  static NAN_METHOD(convertFromRawBits);
+  static NAN_METHOD(save);
 
 protected:
   ~FreeImage();
