@@ -35,12 +35,12 @@
 #define REQ_ERROR_THROW(error) if (ret == error) return JS_EXCEPTION(#error);
 
 template <typename T>
-static T* UnwrapThis(const v8::Arguments& args) {
+static T* UnwrapThis(_NAN_METHOD_ARGS) {
   return node::ObjectWrap::Unwrap<T>(args.This());
 }
 
 template <typename T>
-static T* UnwrapThis(const v8::AccessorInfo& args) {
+static T* UnwrapThis(_NAN_GETTER_ARGS) {
   return node::ObjectWrap::Unwrap<T>(args.This());
 }
 

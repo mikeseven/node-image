@@ -33,19 +33,19 @@ FreeImage::~FreeImage() {
 void FreeImage::Initialize(Handle<Object> target) {
   NanScope();
 
-  Local<FunctionTemplate> t = FunctionTemplate::New(New);
-  constructor_template = Persistent<FunctionTemplate>::New(t);
+  Local<FunctionTemplate> t = NanNew<FunctionTemplate>(New);
+  NanAssignPersistent(constructor_template, t);
 
-  constructor_template->InstanceTemplate()->SetInternalFieldCount(1);
-  constructor_template->SetClassName(NanNew<String>("FreeImage"));
+  t->InstanceTemplate()->SetInternalFieldCount(1);
+  t->SetClassName(NanNew<String>("FreeImage"));
 
-  NODE_SET_PROTOTYPE_METHOD(constructor_template, "getVersion", getVersion);
-  NODE_SET_PROTOTYPE_METHOD(constructor_template, "load", load);
-  NODE_SET_PROTOTYPE_METHOD(constructor_template, "loadFromMemory", loadFromMemory);
-  NODE_SET_PROTOTYPE_METHOD(constructor_template, "convertFromRawBits", convertFromRawBits);
-  NODE_SET_PROTOTYPE_METHOD(constructor_template, "save", save);
+  NODE_SET_PROTOTYPE_METHOD(t, "getVersion", getVersion);
+  NODE_SET_PROTOTYPE_METHOD(t, "load", load);
+  NODE_SET_PROTOTYPE_METHOD(t, "loadFromMemory", loadFromMemory);
+  NODE_SET_PROTOTYPE_METHOD(t, "convertFromRawBits", convertFromRawBits);
+  NODE_SET_PROTOTYPE_METHOD(t, "save", save);
 
-  target->Set(NanNew<String>("FreeImage"), constructor_template->GetFunction());
+  target->Set(NanNew<String>("FreeImage"), t->GetFunction());
 }
 
 void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char *message) {
@@ -79,8 +79,8 @@ NAN_METHOD(FreeImage::load) {
     dib = FreeImage_Load(fif, *filename);
 
   // check that dib does not contains pixels
-  if(!dib) return Undefined();
-  if(!FreeImage_HasPixels(dib)) return Undefined();
+  if(!dib) NanReturnUndefined();
+  if(!FreeImage_HasPixels(dib)) NanReturnUndefined();
 
   NanReturnValue(NanObjectWrapHandle(Image::New(dib)));
 }
@@ -99,8 +99,8 @@ NAN_METHOD(FreeImage::loadFromMemory) {
   FreeImage_CloseMemory(hmem);
 
   // check that dib does not contains pixels
-  if(!dib) return Undefined();
-  if(!FreeImage_HasPixels(dib)) return Undefined();
+  if(!dib) NanReturnUndefined();
+  if(!FreeImage_HasPixels(dib)) NanReturnUndefined();
 
   NanReturnValue(NanObjectWrapHandle(Image::New(dib)));
 }
@@ -131,8 +131,8 @@ NAN_METHOD(FreeImage::convertFromRawBits) {
                                  redMask, greenMask, blueMask, topdown);
 
   // check that dib does not contains pixels
-  if(!dib) return Undefined();
-  if(!FreeImage_HasPixels(dib)) return Undefined();
+  if(!dib) NanReturnUndefined();
+  if(!FreeImage_HasPixels(dib)) NanReturnUndefined();
 
   NanReturnValue(NanObjectWrapHandle(Image::New(dib)));
 }

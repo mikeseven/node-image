@@ -1,6 +1,6 @@
 {
   "name": "node-image",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "A Node.JS wrapper around FreeImage",
   "main": "lib/image.js",
   "author": "Mikael Bourges-Sevenier <mikeseven@gmail.com>",
